@@ -1,0 +1,35 @@
+services:
+  postgres15:
+    image: postgres:15.0
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5438:5432'
+    volumes:
+      - ./src/main/resources/dbinitpg.sql:/docker-entrypoint-initdb.d/dbinitpg.sql
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Comment this part out if you want to run a container for the api instead
+# For now you have to build a jar file first
+#  auth-api:
+#    build: .
+#    image: 'auth-demo:0.0.1-SNAPSHOT'
+#    ports:
+#      - 8080:8080
+#    depends_on:
+#      postgres15:
+#        condition: service_healthy
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://host.docker.internal:3307/byen
+#      - SPRING_DATASOURCE_USERNAME=root
+#      - SPRING_DATASOURCE_PASSWORD=password
