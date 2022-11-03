@@ -1,6 +1,5 @@
 package no.authdemo.authdemo.config
 
-import no.authdemo.authdemo.security.CustomUserDetailsService
 import no.authdemo.authdemo.security.RestAuthenticationEntryPoint
 import no.authdemo.authdemo.security.TokenAuthenticationFilter
 import no.authdemo.authdemo.security.oauth2.CustomOAuth2UserService
@@ -11,24 +10,20 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.config.BeanIds
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.web.SecurityFilterChain
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter
 
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
-class SecurityConfig : WebSecurityConfigurerAdapter() {
-
-    @Autowired
-    private lateinit var customUserDetailsService: CustomUserDetailsService
+class SecurityConfig {
 
     @Autowired
     private lateinit var customOAuth2UserService: CustomOAuth2UserService
@@ -38,9 +33,6 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
 
     @Autowired
     private lateinit var oAuth2AuthenticationFailureHandler: OAuth2AuthenticationFailureHandler
-
-    @Autowired
-    private lateinit var httpCookieOAuth2AuthorizationRequestRepository: HttpCookieOAuth2AuthorizationRequestRepository
 
     @Bean
     fun tokenAuthenticationFilter(): TokenAuthenticationFilter {
@@ -57,26 +49,20 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
         return HttpCookieOAuth2AuthorizationRequestRepository()
     }
 
-    @Throws(Exception::class)
-    public override fun configure(authenticationManagerBuilder: AuthenticationManagerBuilder) {
-        authenticationManagerBuilder
-            .userDetailsService(customUserDetailsService)
-            .passwordEncoder(passwordEncoder())
-    }
-
     @Bean
     fun passwordEncoder(): PasswordEncoder {
         return BCryptPasswordEncoder()
     }
 
-    @Bean(BeanIds.AUTHENTICATION_MANAGER)
+    @Bean
     @Throws(Exception::class)
-    override fun authenticationManagerBean(): AuthenticationManager {
-        return super.authenticationManagerBean()
+    fun authenticationManagerBean(authenticationConfiguration: AuthenticationConfiguration): AuthenticationManager {
+        return authenticationConfiguration.authenticationManager
     }
 
+    @Bean
     @Throws(Exception::class)
-    override fun configure(http: HttpSecurity) {
+    fun filterChain(http: HttpSecurity): SecurityFilterChain?  {
         http
             .cors()
                 .and()
@@ -127,5 +113,7 @@ class SecurityConfig : WebSecurityConfigurerAdapter() {
 
         // Add our custom Token based authentication filter - This asks for a valid jwt before any request (ref "authorizeRequests()" above)
         http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter::class.java)
+
+        return http.build()
     }
 }

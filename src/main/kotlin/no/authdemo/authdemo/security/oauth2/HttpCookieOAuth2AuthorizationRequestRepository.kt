@@ -1,6 +1,6 @@
 package no.authdemo.authdemo.security.oauth2
 
-import com.nimbusds.oauth2.sdk.util.StringUtils
+import com.nimbusds.oauth2.sdk.util.StringUtils.isNotBlank
 import no.authdemo.authdemo.util.CookieUtils.addCookie
 import no.authdemo.authdemo.util.CookieUtils.deleteCookie
 import no.authdemo.authdemo.util.CookieUtils.deserialize
@@ -42,7 +42,7 @@ class HttpCookieOAuth2AuthorizationRequestRepository : AuthorizationRequestRepos
         )
 
         val redirectUriAfterLogin = request.getParameter(REDIRECT_URI_PARAM_COOKIE_NAME)
-        if (StringUtils.isNotBlank(redirectUriAfterLogin)) {
+        if (isNotBlank(redirectUriAfterLogin)) {
             addCookie(response, REDIRECT_URI_PARAM_COOKIE_NAME, redirectUriAfterLogin, cookieExpireSeconds)
         }
     }

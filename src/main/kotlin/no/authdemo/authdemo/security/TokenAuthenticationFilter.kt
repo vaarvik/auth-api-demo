@@ -1,11 +1,11 @@
 package no.authdemo.authdemo.security
 
-import org.slf4j.LoggerFactory
+import org.slf4j.LoggerFactory.getLogger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.core.context.SecurityContextHolder.getContext
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
-import org.springframework.util.StringUtils
+import org.springframework.util.StringUtils.hasText
 import org.springframework.web.filter.OncePerRequestFilter
 import java.io.IOException
 import javax.servlet.FilterChain
@@ -28,12 +28,12 @@ class TokenAuthenticationFilter : OncePerRequestFilter() {
     ) {
         try {
             val jwt = getJwtFromRequest(request)
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
+            if (hasText(jwt) && tokenProvider.validateToken(jwt)) {
                 val userId = tokenProvider.getUserIdFromToken(jwt)
                 val userDetails = customUserDetailsService.loadUserById(userId)
                 val authentication = UsernamePasswordAuthenticationToken(userDetails, null, userDetails.authorities)
                 authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
-                SecurityContextHolder.getContext().authentication = authentication
+                getContext().authentication = authentication
             }
         } catch (ex: Exception) {
             Companion.logger.error("Could not set user authentication in security context", ex)
@@ -43,12 +43,12 @@ class TokenAuthenticationFilter : OncePerRequestFilter() {
 
     private fun getJwtFromRequest(request: HttpServletRequest): String? {
         val bearerToken = request.getHeader("Authorization")
-        return if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
+        return if (hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             bearerToken.substring(7, bearerToken.length)
         } else null
     }
 
     companion object {
-        private val logger = LoggerFactory.getLogger(TokenAuthenticationFilter::class.java)
+        private val logger = getLogger(TokenAuthenticationFilter::class.java)
     }
 }
