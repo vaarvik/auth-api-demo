@@ -2,7 +2,7 @@ package no.authdemo.authdemo.config
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 
-@ConfigurationProperties(prefix = "app")
+@ConfigurationProperties(prefix = "app") // sets variables using attributes from "app" in application.yaml
 class AppProperties {
     val auth = Auth()
     val oauth2 = OAuth2()
@@ -15,10 +15,5 @@ class AppProperties {
     class OAuth2 {
         var authorizedRedirectUris: List<String> = ArrayList()
             private set
-
-        fun authorizedRedirectUris(authorizedRedirectUris: List<String>): OAuth2 {
-            this.authorizedRedirectUris = authorizedRedirectUris
-            return this
-        }
     }
 }
