@@ -10,6 +10,7 @@ class AppProperties {
     class Auth {
         var tokenSecret: String? = null
         var tokenExpirationMsec: Long = 0
+        var tokenCookie: String = "session_token"
     }
 
     class OAuth2 {

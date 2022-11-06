@@ -1,10 +1,13 @@
 package no.authdemo.authdemo.security
 
+import no.authdemo.authdemo.config.AppProperties
+import no.authdemo.authdemo.util.CookieUtils.getCookie
 import org.slf4j.LoggerFactory.getLogger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder.getContext
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
+import org.springframework.stereotype.Component
 import org.springframework.util.StringUtils.hasText
 import org.springframework.web.filter.OncePerRequestFilter
 import java.io.IOException
@@ -13,7 +16,10 @@ import javax.servlet.ServletException
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-class TokenAuthenticationFilter : OncePerRequestFilter() {
+@Component
+class TokenAuthenticationFilter @Autowired internal constructor(
+    private val appProperties: AppProperties,
+) : OncePerRequestFilter() {
     @Autowired
     private lateinit var tokenProvider: TokenProvider
 
@@ -42,7 +48,13 @@ class TokenAuthenticationFilter : OncePerRequestFilter() {
     }
 
     private fun getJwtFromRequest(request: HttpServletRequest): String? {
-        val bearerToken = request.getHeader("Authorization")
+        var bearerToken =
+            if(getCookie(request, appProperties.auth.tokenCookie).isPresent) {
+                "Bearer " + getCookie(request, appProperties.auth.tokenCookie).get().value
+            } else {
+                request.getHeader("Authorization")
+            }
+
         return if (hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             bearerToken.substring(7, bearerToken.length)
         } else null

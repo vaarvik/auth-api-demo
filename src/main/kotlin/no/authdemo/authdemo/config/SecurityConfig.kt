@@ -23,7 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(securedEnabled = true, jsr250Enabled = true, prePostEnabled = true)
-class SecurityConfig {
+class SecurityConfig(private val appProperties: AppProperties) {
 
     @Autowired
     private lateinit var customOAuth2UserService: CustomOAuth2UserService
@@ -34,10 +34,8 @@ class SecurityConfig {
     @Autowired
     private lateinit var oAuth2AuthenticationFailureHandler: OAuth2AuthenticationFailureHandler
 
-    @Bean
-    fun tokenAuthenticationFilter(): TokenAuthenticationFilter {
-        return TokenAuthenticationFilter()
-    }
+    @Autowired
+    private lateinit var tokenAuthenticationFilter: TokenAuthenticationFilter
 
     /*
       By default, Spring OAuth2 uses HttpSessionOAuth2AuthorizationRequestRepository to save
@@ -97,6 +95,10 @@ class SecurityConfig {
                 .anyRequest()
                     .authenticated()
                 .and()
+            .logout{
+                it.logoutUrl("/auth/logout")
+                it.deleteCookies(appProperties.auth.tokenCookie)
+            }
             .oauth2Login()
                 .authorizationEndpoint()
                     .baseUri("/oauth2/authorize")
@@ -112,7 +114,7 @@ class SecurityConfig {
                 .failureHandler(oAuth2AuthenticationFailureHandler)
 
         // Add our custom Token based authentication filter - This asks for a valid jwt before any request (ref "authorizeRequests()" above)
-        http.addFilterBefore(tokenAuthenticationFilter(), UsernamePasswordAuthenticationFilter::class.java)
+        http.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
     }

@@ -44,7 +44,6 @@ class RegularLoginTest {
 
     @BeforeEach
     internal fun setup() {
-        MockitoAnnotations.openMocks(this)
         val user = User()
         user.id = 1
         user.name = "Local User"

@@ -3,6 +3,7 @@ package no.authdemo.authdemo.security.oauth2
 import no.authdemo.authdemo.config.AppProperties
 import no.authdemo.authdemo.exception.BadRequestException
 import no.authdemo.authdemo.security.TokenProvider
+import no.authdemo.authdemo.util.CookieUtils.addCookie
 import no.authdemo.authdemo.util.CookieUtils.getCookie
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.core.Authentication
@@ -34,6 +35,7 @@ class OAuth2AuthenticationSuccessHandler @Autowired internal constructor(
             return
         }
         clearAuthenticationAttributes(request, response)
+        addCookie(response, appProperties.auth.tokenCookie, tokenProvider.createToken(authentication))
         redirectStrategy.sendRedirect(request, response, targetUrl)
     }
 
@@ -50,11 +52,7 @@ class OAuth2AuthenticationSuccessHandler @Autowired internal constructor(
             throw BadRequestException("Sorry! We've got an Unauthorized Redirect URI and can't proceed with the authentication")
         }
 
-        val targetUrl = redirectUri.orElse(defaultTargetUrl)
-        val token = tokenProvider.createToken(authentication)
-        return UriComponentsBuilder.fromUriString(targetUrl)
-            .queryParam("token", token)
-            .build().toUriString()
+        return redirectUri.orElse(defaultTargetUrl)
     }
 
     protected fun clearAuthenticationAttributes(request: HttpServletRequest, response: HttpServletResponse) {
