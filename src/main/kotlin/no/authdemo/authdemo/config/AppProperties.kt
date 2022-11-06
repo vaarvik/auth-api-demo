@@ -10,7 +10,7 @@ class AppProperties {
     class Auth {
         var tokenSecret: String? = null
         var tokenExpirationMsec: Long = 0
-        var tokenCookie: String = "session_token"
+        lateinit var tokenCookie: String
     }
 
     class OAuth2 {
