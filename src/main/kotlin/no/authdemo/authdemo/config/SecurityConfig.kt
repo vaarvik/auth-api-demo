@@ -60,7 +60,7 @@ class SecurityConfig(private val appProperties: AppProperties) {
 
     @Bean
     @Throws(Exception::class)
-    fun filterChain(http: HttpSecurity): SecurityFilterChain?  {
+    fun springSecurityConfiguration(http: HttpSecurity): SecurityFilterChain?  {
         http
             .cors()
                 .and()
@@ -113,7 +113,7 @@ class SecurityConfig(private val appProperties: AppProperties) {
                 .successHandler(oAuth2AuthenticationSuccessHandler)
                 .failureHandler(oAuth2AuthenticationFailureHandler)
 
-        // Add our custom Token based authentication filter - This asks for a valid jwt before any request (ref "authorizeRequests()" above)
+        // Add our custom Token based authentication filter - This asks for a valid jwt before request (ref "authorizeRequests()" above)
         http.addFilterBefore(tokenAuthenticationFilter, UsernamePasswordAuthenticationFilter::class.java)
 
         return http.build()
