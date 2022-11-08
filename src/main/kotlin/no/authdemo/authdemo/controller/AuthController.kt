@@ -34,7 +34,6 @@ class AuthController(val authService: AuthService) {
 
     @PostMapping("/signup")
     fun registerUser(@RequestBody signUpRequest: @Valid SignUpRequestDto): ResponseEntity<*> {
-        println(signUpRequest)
         return try {
             val userInfoEndpoint = authService.handleRegistration(signUpRequest.name, signUpRequest.email, signUpRequest.password)
 
