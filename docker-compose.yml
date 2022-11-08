@@ -10,7 +10,7 @@ services:
         max-size: 10m
         max-file: "3"
     ports:
-      - '5438:5432'
+      - '5442:5432'
     volumes:
       - ./src/main/resources/dbinitpg.sql:/docker-entrypoint-initdb.d/dbinitpg.sql
     healthcheck:
